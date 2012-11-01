@@ -167,8 +167,6 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
     Array a;
     init_array( &a, 10 );
 
-    bool first_run = true; 
-    
     for( i = 0; i < n; ++i )
     {
         bool found = false;
@@ -176,29 +174,19 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
         char * current_datum = ( char * ) palloc ( datum_len );
         memcpy( current_datum, VARDATA( i_data[i] ), datum_len );
 
-        if( first_run )
-        {
-            insert_array( &a, current_datum, 2 );
-            a.counts[0] += 1;
-            first_run = false;
-            found = true;
-        }
-        else
-        {
-            for( j = 0; j < a.used; ++j )
-            { 
-                if( a.array[j] != NULL && strncmp( a.array[j], current_datum, datum_len ) == 0 )
-                {
-                    a.counts[j] += 1;
-                    found = true;
-                    break;                    
-                }
+        for( j = 0; j < a.used; ++j )
+        { 
+            if( a.array[j] != NULL && strncmp( a.array[j], current_datum, datum_len ) == 0 )
+            {
+                a.counts[j] += 1;
+                found = true;
+                break;                    
             }
         }
         if( ! found )
         {
-            insert_array( &a, current_datum, 2 );
-            a.counts[a.used] += 1; 
+            insert_array( &a, current_datum, datum_len );
+            a.counts[a.used-1] += 1; 
         }
     }
     
@@ -210,18 +198,12 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
         if( a.array[i] != NULL )
         {
             size_t datum_len = a.sizes[i];
-            text * res = ( text* ) palloc( datum_len + 1 );
-            SET_VARSIZE( res, datum_len + VARHDRSZ );
-            memset( VARDATA( res ), '\0', datum_len + 1 );
-            strncpy( VARDATA( res ), a.array[i], datum_len );
             int digit_num = get_digit_num( a.counts[i] );
-            text * num = (text* ) palloc( digit_num + VARHDRSZ );
-            SET_VARSIZE( num, digit_num + VARHDRSZ );
-            memset( VARDATA( num ), '\0', digit_num + VARHDRSZ );
-            sprintf( VARDATA(num), "%d", a.counts[i] );
-            pairs[i].key = VARDATA_ANY( res );
+            char * dig_str = palloc(digit_num);
+            sprintf( dig_str, "%d", a.counts[i] );
+            pairs[i].key = a.array[i];
             pairs[i].keylen =  datum_len;
-            pairs[i].val = VARDATA_ANY( num );
+            pairs[i].val = dig_str;
             pairs[i].vallen =  digit_num;
             pairs[i].isnull = false;
             pairs[i].needfree = false;
