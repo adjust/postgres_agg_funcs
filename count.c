@@ -19,6 +19,7 @@ size_t hstoreCheckKeyLen( size_t len )
 
 typedef struct {
     char ** array;
+    char ** counts_str;
     size_t  used;
     size_t  size;
     int *   counts;
@@ -28,11 +29,12 @@ typedef struct {
 void init_array( Array *a, size_t initial_size )
 {
     int i = 0;
-    a->array  = ( char ** )palloc( initial_size * sizeof( char* ) );
-    a->used   = 0;
-    a->size   = initial_size;
-    a->counts = ( int * )palloc( initial_size * sizeof( int ) );
-    a->sizes  = ( int * )palloc( initial_size * sizeof( int ) );
+    a->array      = ( char ** )palloc( initial_size * sizeof( char* ) );
+    a->counts_str = ( char ** )palloc( initial_size * sizeof( char* ) );
+    a->used       = 0;
+    a->size       = initial_size;
+    a->counts     = ( int * )palloc( initial_size * sizeof( int ) );
+    a->sizes      = ( int * )palloc( initial_size * sizeof( int ) );
     for( i = 0; i < a->size; ++i )
     {
         a->counts[i] = 0;
@@ -49,6 +51,10 @@ void insert_array(Array *a, char* elem, size_t elem_size )
         a->array = ( char ** )palloc( a->size * sizeof( char* ) );
         memcpy( a->array, array_swap, sizeof( char* ) * i );
         pfree( array_swap );
+        char ** counts_str_swap = a->counts_str;
+        a->counts_str = ( char ** )palloc( a->size * sizeof( char* ) );
+        memcpy( a->counts_str, counts_str_swap, sizeof( char* ) * i );
+        pfree( counts_str_swap );
         int * count_swap = a->counts;
         a->counts = ( int * )palloc( a->size * sizeof( int ) );
         memcpy( a->counts, count_swap, sizeof( int ) * i );
@@ -73,8 +79,10 @@ void free_array( Array *a )
     for( i = 0; i < a->used; ++i )
     {
         pfree( a->array[i] );
+        pfree( a->counts_str[i] );
     }
     pfree( a->array );
+    pfree( a->counts_str );
     pfree( a->counts );
     pfree( a->sizes );
     a->array = NULL;
@@ -196,7 +204,6 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
     
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
-    char ** dig_str_arr = palloc(a.used * sizeof( char * ) ); 
     for( i = 0; i < a.used; ++i )
     {
         if( a.array[i] != NULL )
@@ -204,8 +211,8 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
             size_t datum_len = a.sizes[i];
             int digit_num = get_digit_num( a.counts[i] );
             char * dig_str = palloc(digit_num);
-            dig_str_arr[i] = dig_str;
             sprintf( dig_str, "%d", a.counts[i] );
+            a.counts_str[i] = dig_str;
             pairs[i].key = a.array[i];
             pairs[i].keylen =  datum_len;
             pairs[i].val = dig_str;
@@ -218,11 +225,6 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
     }
     HStore * out;
     out = hstorePairs( pairs, a.used, buflen );
-    for( i = 0; i < a.used; ++i )
-    {
-        pfree( dig_str_arr[i] );
-    }
-    pfree( dig_str_arr );
     free_array( &a );
     PG_RETURN_POINTER( out );
 }
