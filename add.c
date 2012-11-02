@@ -211,9 +211,10 @@ Datum roa_add( PG_FUNCTION_ARGS )
                 break;
             }
         }
-        if( ( j + 1 ) == a.used && ! a.found[j] )
+        if( j == a.used && ! a.found[j] )
         {
             insert_array( &a, current_key, current_val_int, ( int )key_len );
+            printf( "%s\n", current_key );
         }
     }
     
