@@ -3,7 +3,6 @@
 #include "fmgr.h"
 #include <string.h>
 #include <utils/array.h>
-#include <lib/stringinfo.h>
 
 #ifdef PG_MODULE_MAGIC
 PG_MODULE_MAGIC;
@@ -70,6 +69,11 @@ void insert_array(Array *a, char* elem, size_t elem_size )
 
 void free_array( Array *a )
 {
+    int i;
+    for( i = 0; i < a->used; ++i )
+    {
+        pfree( a->array[i] );
+    }
     pfree( a->array );
     pfree( a->counts );
     pfree( a->sizes );
@@ -192,7 +196,7 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
     
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
-    
+    char ** dig_str_arr = palloc(a.used * sizeof( char * ) ); 
     for( i = 0; i < a.used; ++i )
     {
         if( a.array[i] != NULL )
@@ -200,6 +204,7 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
             size_t datum_len = a.sizes[i];
             int digit_num = get_digit_num( a.counts[i] );
             char * dig_str = palloc(digit_num);
+            dig_str_arr[i] = dig_str;
             sprintf( dig_str, "%d", a.counts[i] );
             pairs[i].key = a.array[i];
             pairs[i].keylen =  datum_len;
@@ -210,9 +215,14 @@ Datum roa_agg( PG_FUNCTION_ARGS ) {
             buflen += pairs[i].keylen;
             buflen += pairs[i].vallen;
         }
-    }    
+    }
     HStore * out;
     out = hstorePairs( pairs, a.used, buflen );
+    for( i = 0; i < a.used; ++i )
+    {
+        pfree( dig_str_arr[i] );
+    }
+    pfree( dig_str_arr );
     free_array( &a );
     PG_RETURN_POINTER( out );
 }
