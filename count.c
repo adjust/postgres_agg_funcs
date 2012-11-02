@@ -134,7 +134,8 @@ int get_digit_num( int number )
 
 PG_FUNCTION_INFO_V1( roa_agg );
 
-Datum roa_agg( PG_FUNCTION_ARGS ) {
+Datum roa_agg( PG_FUNCTION_ARGS ) 
+{
 
     if( PG_ARGISNULL( 0 ) ) 
     {
