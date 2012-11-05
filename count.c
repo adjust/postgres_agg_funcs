@@ -176,7 +176,7 @@ Datum welle_agg( PG_FUNCTION_ARGS )
             &n
     );
 
-    int i, j, k;
+    int i, j;
 
     Array a;
     init_array( &a, 10 );
@@ -192,32 +192,19 @@ Datum welle_agg( PG_FUNCTION_ARGS )
         Position position = find( current_datum, datum_len, tree );
         if( position == NULL )
         {
-            k = a.used;
-            tree = insert( current_datum, datum_len, k, tree );
+            j = a.used;
+            tree = insert( current_datum, datum_len, j, tree );
             insert_array( &a, current_datum, datum_len );
         }
         else
         {
-            k = value( position );
+            j = value( position );
         }
 
-        a.counts[k] += 1;
-
-//        for( j = 0; j < a.used; ++j )
-//        {
-//            if( a.array[j] != NULL && strncmp( a.array[j], current_datum, datum_len ) == 0 )
-//            {
-//                a.counts[j] += 1;
-//                found = true;
-//                break;
-//            }
-//        }
-//        if( ! found )
-//        {
-//            insert_array( &a, current_datum, datum_len );
-//            a.counts[a.used-1] += 1;
-//        }
+        a.counts[j] += 1;
     }
+
+    makeEmpty( tree );
 
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
