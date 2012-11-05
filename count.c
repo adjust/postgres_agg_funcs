@@ -1,5 +1,6 @@
 #include "postgres.h"
 #include "hstore.h"
+#include "avltree.h"
 #include "fmgr.h"
 #include <string.h>
 #include <utils/array.h>
@@ -132,21 +133,21 @@ int get_digit_num( int number )
     return count;
 }
 
-PG_FUNCTION_INFO_V1( roa_agg );
+PG_FUNCTION_INFO_V1( welle_agg );
 
-Datum roa_agg( PG_FUNCTION_ARGS ) 
+Datum welle_agg( PG_FUNCTION_ARGS )
 {
 
-    if( PG_ARGISNULL( 0 ) ) 
+    if( PG_ARGISNULL( 0 ) )
     {
         PG_RETURN_NULL();
     }
-    
+
     ArrayType * input;
     input = PG_GETARG_ARRAYTYPE_P( 0 );
 
     Datum * i_data;
-    
+
     Oid i_eltype;
     i_eltype = ARR_ELEMTYPE( input );
 
@@ -175,10 +176,11 @@ Datum roa_agg( PG_FUNCTION_ARGS )
             &n
     );
 
-    int i, j;
-    
+    int i, j, k;
+
     Array a;
     init_array( &a, 10 );
+    AvlTree tree = makeEmpty( NULL );
 
     for( i = 0; i < n; ++i )
     {
@@ -187,22 +189,36 @@ Datum roa_agg( PG_FUNCTION_ARGS )
         char * current_datum = ( char * ) palloc ( datum_len );
         memcpy( current_datum, VARDATA( i_data[i] ), datum_len );
 
-        for( j = 0; j < a.used; ++j )
-        { 
-            if( a.array[j] != NULL && strncmp( a.array[j], current_datum, datum_len ) == 0 )
-            {
-                a.counts[j] += 1;
-                found = true;
-                break;                    
-            }
-        }
-        if( ! found )
+        Position position = find( current_datum, datum_len, tree );
+        if( position == NULL )
         {
+            k = a.used;
+            tree = insert( current_datum, datum_len, k, tree );
             insert_array( &a, current_datum, datum_len );
-            a.counts[a.used-1] += 1; 
         }
+        else
+        {
+            k = value( position );
+        }
+
+        a.counts[k] += 1;
+
+//        for( j = 0; j < a.used; ++j )
+//        {
+//            if( a.array[j] != NULL && strncmp( a.array[j], current_datum, datum_len ) == 0 )
+//            {
+//                a.counts[j] += 1;
+//                found = true;
+//                break;
+//            }
+//        }
+//        if( ! found )
+//        {
+//            insert_array( &a, current_datum, datum_len );
+//            a.counts[a.used-1] += 1;
+//        }
     }
-    
+
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
     for( i = 0; i < a.used; ++i )
