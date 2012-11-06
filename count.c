@@ -207,7 +207,7 @@ Datum welle_count( PG_FUNCTION_ARGS )
     // save sort permutation to create pairs in order of ascending keys
     // we assume that postgres stores the pairs in that order
     int * perm = ( int * ) palloc ( a.used * sizeof( int ) );
-    dfs( tree, perm );
+    sortPerm( tree, perm );
 
     makeEmpty( tree );
 
@@ -237,4 +237,5 @@ Datum welle_count( PG_FUNCTION_ARGS )
     out = hstorePairs( pairs, a.used, buflen );
     free_array( &a );
     PG_RETURN_POINTER( out );
+    pfree( perm );
 }
