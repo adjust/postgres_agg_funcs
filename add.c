@@ -153,9 +153,9 @@ int get_digit_num( int number )
     return count;
 }
 
-PG_FUNCTION_INFO_V1( roa_add );
+PG_FUNCTION_INFO_V1( welle_add );
 
-Datum roa_add( PG_FUNCTION_ARGS )
+Datum welle_add( PG_FUNCTION_ARGS )
 {
     if( PG_ARGISNULL( 0 ) )
     {

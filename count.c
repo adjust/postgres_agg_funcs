@@ -133,9 +133,9 @@ int get_digit_num( int number )
     return count;
 }
 
-PG_FUNCTION_INFO_V1( welle_agg );
+PG_FUNCTION_INFO_V1( welle_count );
 
-Datum welle_agg( PG_FUNCTION_ARGS )
+Datum welle_count( PG_FUNCTION_ARGS )
 {
 
     if( PG_ARGISNULL( 0 ) )
@@ -204,20 +204,26 @@ Datum welle_agg( PG_FUNCTION_ARGS )
         a.counts[j] += 1;
     }
 
+    // save sort permutation to create pairs in order of ascending keys
+    // we assume that postgres stores the pairs in that order
+    int * perm = ( int * ) palloc ( a.used * sizeof( int ) );
+    dfs( tree, perm );
+
     makeEmpty( tree );
 
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
     for( i = 0; i < a.used; ++i )
     {
-        if( a.array[i] != NULL )
+        j = perm[i];
+        if( a.array[j] != NULL )
         {
-            size_t datum_len = a.sizes[i];
-            int digit_num = get_digit_num( a.counts[i] );
+            size_t datum_len = a.sizes[j];
+            int digit_num = get_digit_num( a.counts[j] );
             char * dig_str = palloc(digit_num);
-            sprintf( dig_str, "%d", a.counts[i] );
-            a.counts_str[i] = dig_str;
-            pairs[i].key = a.array[i];
+            sprintf( dig_str, "%d", a.counts[j] );
+            a.counts_str[j] = dig_str;
+            pairs[i].key = a.array[j];
             pairs[i].keylen =  datum_len;
             pairs[i].val = dig_str;
             pairs[i].vallen =  digit_num;

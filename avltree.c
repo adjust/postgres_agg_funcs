@@ -192,3 +192,13 @@ int value( Position p )
     return p->value;
 }
 
+// return number of nodes
+int dfs( Position p, int * perm ) {
+    if( p == NULL )
+        return 0;
+
+    int n = dfs( p->left, perm );
+    perm[n++] = p->value;
+    n += dfs( p->right, perm + n );
+    return n;
+}
