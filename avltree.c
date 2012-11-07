@@ -35,7 +35,8 @@ static int min( int lhs, int rhs )
     return lhs < rhs ? lhs : rhs;
 }
 
-int compare( char * key, int keylen, AvlTree node ) {
+int compare( char * key, int keylen, AvlTree node )
+{
     if( keylen < node->keylen )
         return -1;
     if( keylen > node->keylen )

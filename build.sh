@@ -15,5 +15,6 @@ psql -c "CREATE OR REPLACE FUNCTION welle_count(anyarray) RETURNS hstore AS '$WO
 
 gcc -I $INCLUDEDIR -fpic -c add.c -I $LIBDIR -lhstore -O3 -march=native 
 gcc -shared -o add.so add.o
+psql -c "CREATE OR REPLACE FUNCTION roa_add(a hstore, b hstore) RETURNS hstore AS '$WORKDIR/add.so' LANGUAGE C;" -U postgres -h localhost $DB
 psql -c "CREATE OR REPLACE FUNCTION welle_add(a hstore, b hstore) RETURNS hstore AS '$WORKDIR/add.so' LANGUAGE C;" -U postgres -h localhost $DB
 psql -U postgres -h localhost $DB

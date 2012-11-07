@@ -153,6 +153,36 @@ int get_digit_num( int number )
     return count;
 }
 
+void readPair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
+{
+    size_t vallen = HS_VALLEN( entries, index );
+    char * val = palloc( vallen * sizeof( char ) );
+    *keylen = HS_KEYLEN( entries, index );
+    *key = palloc( *keylen * sizeof( char ) );
+    memcpy(val, HS_VAL( entries, base, index ), vallen );
+    memcpy(*key, HS_KEY( entries, base, index ), *keylen );
+    *vali = atoi( val );
+    pfree( val );
+}
+
+int min( int a, int b )
+{
+    return ( a < b ) ? a : b;
+}
+
+int compare( char * key1, int keylen1, char * key2, int keylen2 )
+{
+    if( keylen1 < keylen2 )
+        return -1;
+    if( keylen1 > keylen2 )
+        return 1;
+
+    int len = min( keylen1, keylen2 );
+    int cmp = strncmp( key1, key2, len );
+
+    return cmp;
+}
+
 PG_FUNCTION_INFO_V1( welle_add );
 
 Datum welle_add( PG_FUNCTION_ARGS )
@@ -162,58 +192,139 @@ Datum welle_add( PG_FUNCTION_ARGS )
         PG_RETURN_NULL();
     }
 
-    HStore * hs_one = PG_GETARG_HS( 0 );
-    HStore * hs_two = PG_GETARG_HS( 1 );
-
-    HEntry * entries_one = ARRPTR( hs_one );
-    char   * base_one    = STRPTR( hs_one );
-    int      count_one   = HS_COUNT( hs_one );
-
-    HEntry * entries_two = ARRPTR( hs_two );
-    char   * base_two    = STRPTR( hs_two );
-    int      count_two   = HS_COUNT( hs_two );
+    HStore * hstore1 = PG_GETARG_HS( 0 );
+    HStore * hstore2 = PG_GETARG_HS( 1 );
+    HEntry * entries1 = ARRPTR( hstore1 );
+    HEntry * entries2 = ARRPTR( hstore2 );
+    char * base1 = STRPTR( hstore1 );
+    char * base2 = STRPTR( hstore2 );
+    int count1 = HS_COUNT( hstore1 );
+    int count2 = HS_COUNT( hstore2 );
     int i,j;
 
     Array a;
     init_array( &a, 10 );
 
-    for( i = 0; i < count_one; ++i )
+    int index1 = 0, index2 = 0;
+    char * key1, * key2;
+    int val1, val2;
+    size_t keylen1, keylen2;
+
+    // merge both lists by appending the smaller key
+    // or the sum of the values if the keys equal
+    while( index1 < count1 && index2 < count2 )
     {
-        size_t key_len = HS_KEYLEN( entries_one, i );
-        size_t val_len = HS_VALLEN( entries_one, i );
-        char * current_key = palloc( (key_len + 1) * sizeof( char ) );
-        memset( current_key, '\0', key_len + 1 );
-        memcpy(current_key, HS_KEY( entries_one, base_one, i ), key_len );
-        char * current_val = palloc( val_len * sizeof( char ) );
-        memcpy(current_val, HS_VAL( entries_one, base_one, i ), val_len );
-        int current_val_int = atoi( current_val );
-        pfree( current_val );
-        insert_array( &a, current_key, current_val_int, ( int )key_len );
+        readPair( entries1, base1, index1, &key1, &val1, &keylen1 );
+        readPair( entries2, base2, index2, &key2, &val2, &keylen2 );
+
+        int cmp = compare( key1, keylen1, key2, keylen2 );
+        if( cmp < 0 )
+        {
+            insert_array( &a, key1, val1, ( int )keylen1 );
+            index1 += 1;
+        }
+        else if( cmp > 0 )
+        {
+            insert_array( &a, key2, val2, ( int )keylen2 );
+            index2 += 1;
+        }
+        else
+        {
+            insert_array( &a, key1, val1 + val2, ( int )keylen1 );
+            index1 += 1;
+            index2 += 1;
+        }
     }
 
-    for( i = 0; i < count_two; ++i )
+    // finish by appending the longer list
+    while( index1 < count1 )
     {
-        size_t key_len = HS_KEYLEN( entries_two, i );
-        size_t val_len = HS_VALLEN( entries_two, i );
-        char * current_key = palloc( key_len * sizeof( char ) );
-        memcpy(current_key, HS_KEY( entries_two, base_two, i ), key_len );
-        char * current_val = palloc( val_len * sizeof( char ) );
-        memcpy(current_val, HS_VAL( entries_two, base_two, i ), val_len );
-        int current_val_int = atoi( current_val );
-        pfree( current_val );
+        readPair( entries1, base1, index1, &key1, &val1, &keylen1);
+        insert_array( &a, key1, val1, ( int )keylen1 );
+        index1 += 1;
+    }
+    while( index2 < count2 )
+    {
+        readPair( entries2, base2, index2, &key2, &val2, &keylen2);
+        insert_array( &a, key2, val2, ( int )keylen2 );
+        index2 += 1;
+    }
+
+    Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
+    int4 buflen = 0;
+    for( i = 0; i < a.used; ++i )
+    {
+        size_t datum_len = a.sizes[i];
+        int digit_num = get_digit_num( a.vals[i] );
+        char * dig_str = palloc( digit_num );
+        sprintf( dig_str, "%d", a.vals[i] );
+        a.vstr[i] = dig_str;
+        pairs[i].key = a.keys[i];
+        pairs[i].keylen =  datum_len;
+        pairs[i].val = dig_str;
+        pairs[i].vallen =  digit_num;
+        pairs[i].isnull = false;
+        pairs[i].needfree = false;
+        buflen += pairs[i].keylen;
+        buflen += pairs[i].vallen;
+    }
+
+    HStore * out;
+    out = hstorePairs( pairs, a.used, buflen );
+    free_array( &a );
+
+    PG_RETURN_POINTER( out );
+}
+
+PG_FUNCTION_INFO_V1( roa_add );
+
+Datum roa_add( PG_FUNCTION_ARGS )
+{
+    if( PG_ARGISNULL( 0 ) )
+    {
+        PG_RETURN_NULL();
+    }
+
+    HStore * hstore1 = PG_GETARG_HS( 0 );
+    HStore * hstore2 = PG_GETARG_HS( 1 );
+    HEntry * entries1 = ARRPTR( hstore1 );
+    HEntry * entries2 = ARRPTR( hstore2 );
+    char * base1 = STRPTR( hstore1 );
+    char * base2 = STRPTR( hstore2 );
+    int count1 = HS_COUNT( hstore1 );
+    int count2 = HS_COUNT( hstore2 );
+    int i,j;
+
+    Array a;
+    init_array( &a, 10 );
+
+    int index1 = 0, index2 = 0;
+    char * key1, * key2;
+    int val1, val2;
+    size_t keylen1, keylen2;
+
+    for( index1 = 0; index1 < count1; ++index1 )
+    {
+        readPair( entries1, base1, index1, &key1, &val1, &keylen1 );
+        insert_array( &a, key1, val1, ( int )keylen1 );
+    }
+
+    for( index2 = 0; index2 < count2; ++index2 )
+    {
+        readPair( entries2, base2, index2, &key2, &val2, &keylen2 );
 
         for( j = 0; j < a.used; ++j )
         {
-            if( bcmp( current_key, a.keys[j], key_len ) == 0 )
+            if( bcmp( key2, a.keys[j], keylen2 ) == 0 )
             {
-                a.vals[j] += current_val_int;
+                a.vals[j] += val2;
                 a.found[j] = true;
                 break;
             }
         }
         if( j == a.used && ! a.found[j] )
         {
-            insert_array( &a, current_key, current_val_int, ( int )key_len );
+            insert_array( &a, key2, val2, ( int )keylen2 );
         }
     }
 
