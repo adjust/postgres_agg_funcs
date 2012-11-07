@@ -219,7 +219,7 @@ Datum roa_add( PG_FUNCTION_ARGS )
             insert_array( &a, current_key, current_val_int, ( int )key_len );
         }
     }
-    
+
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
     for( i = 0; i < a.used; ++i )
@@ -238,11 +238,11 @@ Datum roa_add( PG_FUNCTION_ARGS )
         buflen += pairs[i].keylen;
         buflen += pairs[i].vallen;
     }
-    
+
     HStore * out;
     out = hstorePairs( pairs, a.used, buflen );
     free_array( &a );
-    
+
     PG_RETURN_POINTER( out );
 }
 
