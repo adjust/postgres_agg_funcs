@@ -184,7 +184,8 @@ Datum roa_add( PG_FUNCTION_ARGS )
         char * current_key = palloc( (key_len + 1) * sizeof( char ) );
         memset( current_key, '\0', key_len + 1 );
         memcpy(current_key, HS_KEY( entries_one, base_one, i ), key_len );
-        char * current_val = palloc( val_len * sizeof( char ) );
+        char * current_val = palloc( ( val_len + 1 ) * sizeof( char ) );
+        memset( current_val, '\0', val_len + 1 );
         memcpy(current_val, HS_VAL( entries_one, base_one, i ), val_len );
         int current_val_int = atoi( current_val );
         pfree( current_val );
@@ -195,9 +196,11 @@ Datum roa_add( PG_FUNCTION_ARGS )
     {
         size_t key_len = HS_KEYLEN( entries_two, i );
         size_t val_len = HS_VALLEN( entries_two, i );
-        char * current_key = palloc( key_len * sizeof( char ) );
+        char * current_key = palloc( ( key_len + 1 ) * sizeof( char ) );
+        memset( current_key, '\0', key_len + 1 );
         memcpy(current_key, HS_KEY( entries_two, base_two, i ), key_len );
         char * current_val = palloc( val_len * sizeof( char ) );
+        memset( current_val, '\0', val_len + 1 );
         memcpy(current_val, HS_VAL( entries_two, base_two, i ), val_len );
         int current_val_int = atoi( current_val );
         pfree( current_val );
