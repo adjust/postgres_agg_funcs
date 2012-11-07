@@ -16,7 +16,6 @@ psql -U postgres -h localhost $DB -c "CREATE OR REPLACE FUNCTION welle_count(any
 gcc -I $INCLUDEDIR -fpic -c add.c -I $LIBDIR -lhstore -O3 -march=native
 gcc -shared -o add.so add.o
 psql -U postgres -h localhost $DB -c "CREATE OR REPLACE FUNCTION welle_add(a hstore, b hstore) RETURNS hstore AS '$WORKDIR/add.so' LANGUAGE C;"
-# use the following line to create the aggregate welle_sum
-# would be preferable to use something along the lines of "CREATE OR REPLACE AGGREGATE"
-# psql -U postgres -h localhost $DB -c "CREATE AGGREGATE welle_sum ( sfunc = welle_add, basetype = hstore, stype = hstore, initcond = '');"
+psql -U postgres -h localhost $DB -c "DROP AGGREGATE IF EXISTS welle_sum(hstore);"
+psql -U postgres -h localhost $DB -c "CREATE AGGREGATE welle_sum ( sfunc = welle_add, basetype = hstore, stype = hstore, initcond = '');"
 psql -U postgres -h localhost $DB
