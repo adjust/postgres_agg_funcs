@@ -14,12 +14,12 @@ struct AvlNode
     int      height;
 };
 
-AvlTree makeEmpty( AvlTree t )
+AvlTree make_empty( AvlTree t )
 {
     if( t != NULL )
     {
-        makeEmpty( t->left );
-        makeEmpty( t->right );
+        make_empty( t->left );
+        make_empty( t->right );
         pfree( t );
     }
     return NULL;
@@ -194,12 +194,12 @@ int value( Position p )
 }
 
 // return number of nodes
-int sortPerm( Position p, int * perm ) {
+int sort_perm( Position p, int * perm ) {
     if( p == NULL )
         return 0;
 
-    int n = sortPerm( p->left, perm );
+    int n = sort_perm( p->left, perm );
     perm[n++] = p->value;
-    n += sortPerm( p->right, perm + n );
+    n += sort_perm( p->right, perm + n );
     return n;
 }

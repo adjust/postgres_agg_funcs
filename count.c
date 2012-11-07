@@ -180,7 +180,7 @@ Datum welle_count( PG_FUNCTION_ARGS )
 
     Array a;
     init_array( &a, 10 );
-    AvlTree tree = makeEmpty( NULL );
+    AvlTree tree = make_empty( NULL );
 
     for( i = 0; i < n; ++i )
     {
@@ -207,9 +207,9 @@ Datum welle_count( PG_FUNCTION_ARGS )
     // save sort permutation to create pairs in order of ascending keys
     // we assume that postgres stores the pairs in that order
     int * perm = ( int * ) palloc ( a.used * sizeof( int ) );
-    sortPerm( tree, perm );
+    sort_perm( tree, perm );
 
-    makeEmpty( tree );
+    make_empty( tree );
 
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
     int4 buflen = 0;

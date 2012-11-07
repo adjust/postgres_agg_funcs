@@ -153,15 +153,19 @@ int get_digit_num( int number )
     return count;
 }
 
-void readPair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
+void read_pair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
 {
     size_t vallen = HS_VALLEN( entries, index );
-    char * val = palloc( vallen * sizeof( char ) );
-    *keylen = HS_KEYLEN( entries, index );
-    *key = palloc( *keylen * sizeof( char ) );
+    char * val = palloc( ( vallen + 1 ) * sizeof( char ) );
+    memset( val, '\0', vallen + 1 );
     memcpy(val, HS_VAL( entries, base, index ), vallen );
+
+    *keylen = HS_KEYLEN( entries, index );
+    *key = palloc( ( *keylen + 1 ) * sizeof( char ) );
+    memset( *key, '\0', *keylen + 1 );
     memcpy(*key, HS_KEY( entries, base, index ), *keylen );
     *vali = atoi( val );
+
     pfree( val );
 }
 
@@ -185,6 +189,9 @@ int compare( char * key1, int keylen1, char * key2, int keylen2 )
 
 PG_FUNCTION_INFO_V1( welle_add );
 
+// works on sorted hstores only, returns sorted result
+// further idea for improvement: work on array of hstores and use heap to
+// select minimum key (avoids serialization of many hstores)
 Datum welle_add( PG_FUNCTION_ARGS )
 {
     if( PG_ARGISNULL( 0 ) )
@@ -214,8 +221,8 @@ Datum welle_add( PG_FUNCTION_ARGS )
     // or the sum of the values if the keys equal
     while( index1 < count1 && index2 < count2 )
     {
-        readPair( entries1, base1, index1, &key1, &val1, &keylen1 );
-        readPair( entries2, base2, index2, &key2, &val2, &keylen2 );
+        read_pair( entries1, base1, index1, &key1, &val1, &keylen1 );
+        read_pair( entries2, base2, index2, &key2, &val2, &keylen2 );
 
         int cmp = compare( key1, keylen1, key2, keylen2 );
         if( cmp < 0 )
@@ -239,13 +246,13 @@ Datum welle_add( PG_FUNCTION_ARGS )
     // finish by appending the longer list
     while( index1 < count1 )
     {
-        readPair( entries1, base1, index1, &key1, &val1, &keylen1);
+        read_pair( entries1, base1, index1, &key1, &val1, &keylen1);
         insert_array( &a, key1, val1, ( int )keylen1 );
         index1 += 1;
     }
     while( index2 < count2 )
     {
-        readPair( entries2, base2, index2, &key2, &val2, &keylen2);
+        read_pair( entries2, base2, index2, &key2, &val2, &keylen2);
         insert_array( &a, key2, val2, ( int )keylen2 );
         index2 += 1;
     }
@@ -278,6 +285,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
 
 PG_FUNCTION_INFO_V1( roa_add );
 
+// works on all hstores (no need for sorted keys)
 Datum roa_add( PG_FUNCTION_ARGS )
 {
     if( PG_ARGISNULL( 0 ) )
@@ -305,13 +313,13 @@ Datum roa_add( PG_FUNCTION_ARGS )
 
     for( index1 = 0; index1 < count1; ++index1 )
     {
-        readPair( entries1, base1, index1, &key1, &val1, &keylen1 );
+        read_pair( entries1, base1, index1, &key1, &val1, &keylen1 );
         insert_array( &a, key1, val1, ( int )keylen1 );
     }
 
     for( index2 = 0; index2 < count2; ++index2 )
     {
-        readPair( entries2, base2, index2, &key2, &val2, &keylen2 );
+        read_pair( entries2, base2, index2, &key2, &val2, &keylen2 );
 
         for( j = 0; j < a.used; ++j )
         {
