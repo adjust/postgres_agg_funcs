@@ -7,7 +7,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-Datum * sort_and_uniq( Datum *data, int n, int * dims )
+Datum * radix_uniq( Datum *data, int n, int * dims )
 {
     int i, j,a[n], m = 0, exp = 1;
     int * b = palloc( n * sizeof(int));
@@ -114,7 +114,7 @@ Datum roa_uniq( PG_FUNCTION_ARGS )
     dims  = ARR_DIMS(input);
     lbs   = ARR_LBOUND(input);
 
-    Datum * uniq = sort-and_uniq(i_data, n, dims);
+    Datum * uniq = radix_uniq(i_data, n, dims);
     result = construct_md_array(
             ( void * )uniq,
             NULL,
