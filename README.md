@@ -2,4 +2,4 @@ postgres_agg_funcs
 ==================
 Build:
 
-run build.sh
+run build.sh <DBNAME>
