@@ -29,11 +29,11 @@ i="count.c avltree.c"
 OFILE=${i//".c"/".o"}
 SOFILE="count.so"
 cc -I $OSSP_INC -I $PSQL_SERVER_INC -I $PSQL_INTERNAL_INC -I $XML2_INC -I $WORKDIR \
-    $WARNFLAGS $FFLAGS -c -o $OFILE $i
+    $WARNFLAGS $FFLAGS -c $i
 
 cc -I $OSSP_INC $WARNFLAGS $FFLAGS -L $PSQL_LIB_DIR -L $OSSP_LIB_DIR \
    -Wl,-dead_strip_dylibs \
-   -bundle -bundle-loader \
+   -bundle -bundle_loader \
    $PSQL_BIN -o $SOFILE $OFILE
 
 i="add.c"
@@ -44,7 +44,7 @@ cc -I $OSSP_INC -I $PSQL_SERVER_INC -I $PSQL_INTERNAL_INC -I $XML2_INC -I $WORKD
 
 cc -I $OSSP_INC $WARNFLAGS $FFLAGS -L $PSQL_LIB_DIR -L $OSSP_LIB_DIR \
    -Wl,-dead_strip_dylibs \
-   -bundle -bundle-loader \
+   -bundle -bundle_loader \
    $PSQL_BIN -o $SOFILE $OFILE
 
 i="uniq.c"
@@ -55,5 +55,5 @@ cc -I $OSSP_INC -I $PSQL_SERVER_INC -I $PSQL_INTERNAL_INC -I $XML2_INC -I $WORKD
 
 cc -I $OSSP_INC $WARNFLAGS $FFLAGS -L $PSQL_LIB_DIR -L $OSSP_LIB_DIR \
    -Wl,-dead_strip_dylibs \
-   -bundle -bundle-loader \
+   -bundle -bundle_loader \
    $PSQL_BIN -o $SOFILE $OFILE
