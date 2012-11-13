@@ -9,8 +9,7 @@ PG_MODULE_MAGIC;
 
 Datum * radix_uniq( Datum *data, int n, int * dims )
 {
-    int i, j,a[n], m = 0, exp = 1;
-    int * b = palloc( n * sizeof(int));
+    int i, j,a[n], b[n], m = 0, exp = 1;
     for( i = 0; i < n; i++ ) 
     {
         a[i] = DatumGetInt32(data[i]);
@@ -46,20 +45,19 @@ Datum * radix_uniq( Datum *data, int n, int * dims )
 
     for( i = 0, j = i + 1; j <= n; j++ )
     {
-		if(a[i]==a[j])
+        if(a[i]==a[j])
         {
-			continue;
+            continue;
         }
-		b[m++]=a[i];
-		i=j;
-	}
+        b[m++]=a[i];
+        i=j;
+    }
 
     Datum *c = ( Datum* )palloc( m * sizeof( Datum ) );
     for( i = 0; i < m; i++ )
     {
         c[i] = Int32GetDatum( ( int32 )b[i] );
     }
-    pfree( b );
     *dims = m;
     return c;
 }
