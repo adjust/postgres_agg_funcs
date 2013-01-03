@@ -194,7 +194,7 @@ PG_FUNCTION_INFO_V1( welle_add );
 // select minimum key (avoids serialization of many hstores)
 Datum welle_add( PG_FUNCTION_ARGS )
 {
-    if( PG_ARGISNULL( 0 ) )
+    if( PG_ARGISNULL( 0 ) || PG_ARGISNULL( 1 ) )
     {
         PG_RETURN_NULL();
     }
@@ -288,7 +288,7 @@ PG_FUNCTION_INFO_V1( roa_add );
 // works on all hstores (no need for sorted keys)
 Datum roa_add( PG_FUNCTION_ARGS )
 {
-    if( PG_ARGISNULL( 0 ) )
+    if( PG_ARGISNULL( 0 ) || PG_ARGISNULL( 1 ) )
     {
         PG_RETURN_NULL();
     }
