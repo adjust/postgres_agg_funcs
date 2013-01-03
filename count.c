@@ -184,24 +184,27 @@ Datum welle_count( PG_FUNCTION_ARGS )
 
     for( i = 0; i < n; ++i )
     {
-        bool found = false;
-        size_t datum_len = VARSIZE( i_data[i] ) - VARHDRSZ;
-        char * current_datum = ( char * ) palloc ( datum_len );
-        memcpy( current_datum, VARDATA( i_data[i] ), datum_len );
-
-        Position position = find( current_datum, datum_len, tree );
-        if( position == NULL )
+        if( ! nulls[i] )
         {
-            j = a.used;
-            tree = insert( current_datum, datum_len, j, tree );
-            insert_array( &a, current_datum, datum_len );
-        }
-        else
-        {
-            j = value( position );
-        }
+            bool found = false;
+            size_t datum_len = VARSIZE( i_data[i] ) - VARHDRSZ;
+            char * current_datum = ( char * ) palloc ( datum_len );
+            memcpy( current_datum, VARDATA( i_data[i] ), datum_len );
 
-        a.counts[j] += 1;
+            Position position = find( current_datum, datum_len, tree );
+            if( position == NULL )
+            {
+                j = a.used;
+                tree = insert( current_datum, datum_len, j, tree );
+                insert_array( &a, current_datum, datum_len );
+            }
+            else
+            {
+                j = value( position );
+            }
+    
+            a.counts[j] += 1;
+        }
     }
 
     // save sort permutation to create pairs in order of ascending keys
