@@ -194,11 +194,20 @@ PG_FUNCTION_INFO_V1( welle_add );
 // select minimum key (avoids serialization of many hstores)
 Datum welle_add( PG_FUNCTION_ARGS )
 {
-    if( PG_ARGISNULL( 0 ) || PG_ARGISNULL( 1 ) )
+    if( PG_ARGISNULL( 0 ) && ! PG_ARGISNULL( 1 ) )
     {
-        PG_RETURN_NULL();
+        PG_RETURN_POINTER( PG_GETARG_HS( 1 ) );
     }
-
+    if( ! PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
+    {
+        PG_RETURN_POINTER( PG_GETARG_HS( 0 ) );
+    }
+    if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
+    {
+        HStore * out;
+        out = hstorePairs( 0, 0, 0 );
+        PG_RETURN_POINTER( out );
+    }
     HStore * hstore1 = PG_GETARG_HS( 0 );
     HStore * hstore2 = PG_GETARG_HS( 1 );
     HEntry * entries1 = ARRPTR( hstore1 );
@@ -288,9 +297,21 @@ PG_FUNCTION_INFO_V1( roa_add );
 // works on all hstores (no need for sorted keys)
 Datum roa_add( PG_FUNCTION_ARGS )
 {
-    if( PG_ARGISNULL( 0 ) || PG_ARGISNULL( 1 ) )
+    if( PG_ARGISNULL( 0 ) && ! PG_ARGISNULL( 1 ) )
     {
-        PG_RETURN_NULL();
+        PG_RETURN_POINTER( PG_GETARG_HS( 1 ) );
+    }
+    if( ! PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
+    {
+        PG_RETURN_POINTER( PG_GETARG_HS( 0 ) );
+    }
+    if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
+    {
+        HStore * out;
+        Pairs * pairs = palloc( sizeof( Pairs ) );
+        memcpy( pairs, 0, sizeof( Pairs ) );
+        out = hstorePairs( 0, 0, 0 );
+        PG_RETURN_POINTER( out );
     }
 
     HStore * hstore1 = PG_GETARG_HS( 0 );
