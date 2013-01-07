@@ -1,10 +1,11 @@
 require 'formula'
 class PostgresAggFuncs < Formula
-  url 'git@github.com:adeven/postgres_agg_funcs.git', :using => :git, :tag => 'v0.0.1'
+  head 'git@github.com:adeven/postgres_agg_funcs.git',:using => :git, :branch => 'master'
+  url 'git@github.com:adeven/postgres_agg_funcs.git', :using => :git, :tag => 'v0.0.3'
   homepage 'https://github.com/adeven/postgres_agg_funcs'
   depends_on 'postgresql'
   depends_on 'ossp-uuid'
-  version 'v0.0.1'
+  version 'v0.0.3'
 
   def install
 
