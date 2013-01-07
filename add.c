@@ -201,7 +201,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     if( ! PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
     {
         PG_RETURN_POINTER( PG_GETARG_HS( 0 ) );
-    
+    }
     if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
     {
         HStore * out;
@@ -264,97 +264,6 @@ Datum welle_add( PG_FUNCTION_ARGS )
         add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2);
         add_insert_array( &a, key2, val2, ( int )keylen2 );
         index2 += 1;
-    }
-
-    Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
-    int4 buflen = 0;
-    for( i = 0; i < a.used; ++i )
-    {
-        size_t datum_len = a.sizes[i];
-        int digit_num = add_get_digit_num( a.vals[i] );
-        char * dig_str = palloc( digit_num );
-        sprintf( dig_str, "%d", a.vals[i] );
-        a.vstr[i] = dig_str;
-        pairs[i].key = a.keys[i];
-        pairs[i].keylen =  datum_len;
-        pairs[i].val = dig_str;
-        pairs[i].vallen =  digit_num;
-        pairs[i].isnull = false;
-        pairs[i].needfree = false;
-        buflen += pairs[i].keylen;
-        buflen += pairs[i].vallen;
-    }
-
-    HStore * out;
-    out = add_hstorePairs( pairs, a.used, buflen );
-    add_free_array( &a );
-
-    PG_RETURN_POINTER( out );
-}
-
-PG_FUNCTION_INFO_V1( roa_add );
-
-// works on all hstores (no need for sorted keys)
-Datum roa_add( PG_FUNCTION_ARGS )
-{
-    if( PG_ARGISNULL( 0 ) && ! PG_ARGISNULL( 1 ) )
-    {
-        PG_RETURN_POINTER( PG_GETARG_HS( 1 ) );
-    }
-    if( ! PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
-    {
-        PG_RETURN_POINTER( PG_GETARG_HS( 0 ) );
-    }
-    if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
-    {
-        HStore * out;
-        Pairs * pairs = palloc( sizeof( Pairs ) );
-        memcpy( pairs, 0, sizeof( Pairs ) );
-        out = add_hstorePairs( 0, 0, 0 );
-        PG_RETURN_POINTER( out );
-    }
-
-    HStore * hstore1 = PG_GETARG_HS( 0 );
-    HStore * hstore2 = PG_GETARG_HS( 1 );
-    HEntry * entries1 = ARRPTR( hstore1 );
-    HEntry * entries2 = ARRPTR( hstore2 );
-    char * base1 = STRPTR( hstore1 );
-    char * base2 = STRPTR( hstore2 );
-    int count1 = HS_COUNT( hstore1 );
-    int count2 = HS_COUNT( hstore2 );
-    int i,j;
-
-    Array a;
-    add_init_array( &a, 10 );
-
-    int index1 = 0, index2 = 0;
-    char * key1, * key2;
-    int val1, val2;
-    size_t keylen1, keylen2;
-
-    for( index1 = 0; index1 < count1; ++index1 )
-    {
-        add_read_pair( entries1, base1, index1, &key1, &val1, &keylen1 );
-        add_insert_array( &a, key1, val1, ( int )keylen1 );
-    }
-
-    for( index2 = 0; index2 < count2; ++index2 )
-    {
-        add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2 );
-
-        for( j = 0; j < a.used; ++j )
-        {
-            if( bcmp( key2, a.keys[j], keylen2 ) == 0 )
-            {
-                a.vals[j] += val2;
-                a.found[j] = true;
-                break;
-            }
-        }
-        if( j == a.used && ! a.found[j] )
-        {
-            add_insert_array( &a, key2, val2, ( int )keylen2 );
-        }
     }
 
     Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
