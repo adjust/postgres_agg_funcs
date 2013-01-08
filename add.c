@@ -1,3 +1,7 @@
+/*
+ * All functions in this file use the adeven_add_.. namespace to avoid name collisions
+ */
+
 #include "postgres.h"
 #include "hstore.h"
 #include "fmgr.h"
@@ -19,7 +23,7 @@ typedef struct {
     bool *  found;
 } Array;
 
-HStore * add_hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
+HStore * adeven_add_hstore_pairs( Pairs *pairs, int4 pcount, int4 buflen )
 {
     HStore     *out;
     HEntry     *entry;
@@ -49,7 +53,7 @@ HStore * add_hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
     return out;
 }
 
-void add_init_array( Array *a, size_t initial_size )
+void adeven_add_init_array( Array *a, size_t initial_size )
 {
     int i = 0;
     a->keys  = ( char ** )palloc( initial_size * sizeof( char * ) );
@@ -67,7 +71,7 @@ void add_init_array( Array *a, size_t initial_size )
     }
 }
 
-void add_insert_array( Array *a, char * key, int val, int elem_size )
+void adeven_add_insert_array( Array *a, char * key, int val, int elem_size )
 {
     if( a->used == a->size )
     {
@@ -111,7 +115,7 @@ void add_insert_array( Array *a, char * key, int val, int elem_size )
     a->vals[a->used++] = val;
 }
 
-void add_free_array( Array *a )
+void adeven_add_free_array( Array *a )
 {
     int i;
     for( i = 0; i < a->used; ++i )
@@ -134,13 +138,13 @@ void add_free_array( Array *a )
     a->used = a->size = 0;
 }
 
-HStore * add_hstoreUpgrade(Datum orig)
+HStore * adeven_add_hstore_upgrade(Datum orig)
 {
 	HStore	   *hs = (HStore *) PG_DETOAST_DATUM(orig);
     return hs;
 }
 
-int add_get_digit_num( int number )
+int adeven_add_get_digit_num( int number )
 {
     if( number == 0 )
         return 1;
@@ -153,7 +157,7 @@ int add_get_digit_num( int number )
     return count;
 }
 
-void add_read_pair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
+void adeven_add_read_pair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
 {
     size_t vallen = HS_VALLEN( entries, index );
     char * val = palloc( ( vallen + 1 ) * sizeof( char ) );
@@ -169,19 +173,19 @@ void add_read_pair( HEntry * entries, char * base, int index, char ** key, int *
     pfree( val );
 }
 
-int min( int a, int b )
+int adeven_add_min( int a, int b )
 {
     return ( a < b ) ? a : b;
 }
 
-int add_compare( char * key1, int keylen1, char * key2, int keylen2 )
+int adeven_add_compare( char * key1, int keylen1, char * key2, int keylen2 )
 {
     if( keylen1 < keylen2 )
         return -1;
     if( keylen1 > keylen2 )
         return 1;
 
-    int len = min( keylen1, keylen2 );
+    int len = adeven_add_min( keylen1, keylen2 );
     int cmp = strncmp( key1, key2, len );
 
     return cmp;
@@ -205,7 +209,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
     {
         HStore * out;
-        out = add_hstorePairs( 0, 0, 0 );
+        out = adeven_add_hstore_pairs( 0, 0, 0 );
         PG_RETURN_POINTER( out );
     }
     HStore * hstore1 = PG_GETARG_HS( 0 );
@@ -219,7 +223,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     int i,j;
 
     Array a;
-    add_init_array( &a, 10 );
+    adeven_add_init_array( &a, 10 );
 
     int index1 = 0, index2 = 0;
     char * key1, * key2;
@@ -230,23 +234,23 @@ Datum welle_add( PG_FUNCTION_ARGS )
     // or the sum of the values if the keys equal
     while( index1 < count1 && index2 < count2 )
     {
-        add_read_pair( entries1, base1, index1, &key1, &val1, &keylen1 );
-        add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2 );
+        adeven_add_read_pair( entries1, base1, index1, &key1, &val1, &keylen1 );
+        adeven_add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2 );
 
-        int cmp = add_compare( key1, keylen1, key2, keylen2 );
+        int cmp = adeven_add_compare( key1, keylen1, key2, keylen2 );
         if( cmp < 0 )
         {
-            add_insert_array( &a, key1, val1, ( int )keylen1 );
+            adeven_add_insert_array( &a, key1, val1, ( int )keylen1 );
             index1 += 1;
         }
         else if( cmp > 0 )
         {
-            add_insert_array( &a, key2, val2, ( int )keylen2 );
+            adeven_add_insert_array( &a, key2, val2, ( int )keylen2 );
             index2 += 1;
         }
         else
         {
-            add_insert_array( &a, key1, val1 + val2, ( int )keylen1 );
+            adeven_add_insert_array( &a, key1, val1 + val2, ( int )keylen1 );
             index1 += 1;
             index2 += 1;
         }
@@ -255,14 +259,14 @@ Datum welle_add( PG_FUNCTION_ARGS )
     // finish by appending the longer list
     while( index1 < count1 )
     {
-        add_read_pair( entries1, base1, index1, &key1, &val1, &keylen1);
-        add_insert_array( &a, key1, val1, ( int )keylen1 );
+        adeven_add_read_pair( entries1, base1, index1, &key1, &val1, &keylen1);
+        adeven_add_insert_array( &a, key1, val1, ( int )keylen1 );
         index1 += 1;
     }
     while( index2 < count2 )
     {
-        add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2);
-        add_insert_array( &a, key2, val2, ( int )keylen2 );
+        adeven_add_read_pair( entries2, base2, index2, &key2, &val2, &keylen2);
+        adeven_add_insert_array( &a, key2, val2, ( int )keylen2 );
         index2 += 1;
     }
 
@@ -271,7 +275,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     for( i = 0; i < a.used; ++i )
     {
         size_t datum_len = a.sizes[i];
-        int digit_num = add_get_digit_num( a.vals[i] );
+        int digit_num = adeven_add_get_digit_num( a.vals[i] );
         char * dig_str = palloc( digit_num );
         sprintf( dig_str, "%d", a.vals[i] );
         a.vstr[i] = dig_str;
@@ -286,8 +290,8 @@ Datum welle_add( PG_FUNCTION_ARGS )
     }
 
     HStore * out;
-    out = add_hstorePairs( pairs, a.used, buflen );
-    add_free_array( &a );
+    out = adeven_add_hstore_pairs( pairs, a.used, buflen );
+    adeven_add_free_array( &a );
 
     PG_RETURN_POINTER( out );
 }

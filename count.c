@@ -9,15 +9,6 @@
 PG_MODULE_MAGIC;
 #endif
 
-size_t hstoreCheckKeyLen( size_t len )
-{
-    if( len > HSTORE_MAX_KEY_LEN )
-        ereport( ERROR,
-                ( errcode(ERRCODE_STRING_DATA_RIGHT_TRUNCATION ),
-                 errmsg( "string too long for hstore key" ) ) );
-    return len;
-}
-
 typedef struct {
     char ** array;
     char ** counts_str;
@@ -25,9 +16,9 @@ typedef struct {
     size_t  size;
     int *   counts;
     int *   sizes;
-} Array;
+} adeven_count_Array;
 
-void init_array( Array *a, size_t initial_size )
+void adeven_count_init_array( adeven_count_Array *a, size_t initial_size )
 {
     int i = 0;
     a->array      = ( char ** )palloc( initial_size * sizeof( char* ) );
@@ -42,7 +33,7 @@ void init_array( Array *a, size_t initial_size )
     }
 }
 
-void insert_array(Array *a, char* elem, size_t elem_size )
+void adeven_count_insert_array(adeven_count_Array *a, char* elem, size_t elem_size )
 {
     if( a->used == a->size )
     {
@@ -74,7 +65,7 @@ void insert_array(Array *a, char* elem, size_t elem_size )
     a->array[a->used++] = elem;
 }
 
-void free_array( Array *a )
+void adeven_count_free_array( adeven_count_Array *a )
 {
     int i;
     for( i = 0; i < a->used; ++i )
@@ -90,7 +81,16 @@ void free_array( Array *a )
     a->used = a->size = 0;
 }
 
-HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
+size_t adeven_count_hstore_check_key_len( size_t len )
+{
+    if( len > HSTORE_MAX_KEY_LEN )
+        ereport( ERROR,
+                ( errcode(ERRCODE_STRING_DATA_RIGHT_TRUNCATION ),
+                 errmsg( "string too long for hstore key" ) ) );
+    return len;
+}
+
+HStore * adeven_count_hstore_pairs( Pairs *pairs, int4 pcount, int4 buflen )
 {
     HStore     *out;
     HEntry     *entry;
@@ -120,7 +120,7 @@ HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
     return out;
 }
 
-int get_digit_num( int number )
+int adeven_count_get_digit_num( int number )
 {
     if( number == 0 )
         return 1;
@@ -178,8 +178,8 @@ Datum welle_count( PG_FUNCTION_ARGS )
 
     int i, j;
 
-    Array a;
-    init_array( &a, 10 );
+    adeven_count_Array a;
+    adeven_count_init_array( &a, 10 );
     AvlTree tree = make_empty( NULL );
 
     for( i = 0; i < n; ++i )
@@ -196,7 +196,7 @@ Datum welle_count( PG_FUNCTION_ARGS )
             {
                 j = a.used;
                 tree = insert( current_datum, datum_len, j, tree );
-                insert_array( &a, current_datum, datum_len );
+                adeven_count_insert_array( &a, current_datum, datum_len );
             }
             else
             {
@@ -222,7 +222,7 @@ Datum welle_count( PG_FUNCTION_ARGS )
         if( a.array[j] != NULL )
         {
             size_t datum_len = a.sizes[j];
-            int digit_num = get_digit_num( a.counts[j] );
+            int digit_num = adeven_count_get_digit_num( a.counts[j] );
             char * dig_str = palloc(digit_num);
             sprintf( dig_str, "%d", a.counts[j] );
             a.counts_str[j] = dig_str;
@@ -237,8 +237,8 @@ Datum welle_count( PG_FUNCTION_ARGS )
         }
     }
     HStore * out;
-    out = hstorePairs( pairs, a.used, buflen );
-    free_array( &a );
+    out = adeven_count_hstore_pairs( pairs, a.used, buflen );
+    adeven_count_free_array( &a );
     PG_RETURN_POINTER( out );
     pfree( perm );
 }

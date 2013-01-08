@@ -7,7 +7,7 @@
 PG_MODULE_MAGIC;
 #endif
 
-Datum * radix_uniq( Datum *data, int n, int * dims )
+Datum * adeven_uniq_radix_uniq( Datum *data, int n, int * dims )
 {
     int i, j, m = 0, exp = 1;
     int * a = palloc( n * sizeof(n) );
@@ -116,7 +116,7 @@ Datum roa_uniq( PG_FUNCTION_ARGS )
     dims  = ARR_DIMS(input);
     lbs   = ARR_LBOUND(input);
 
-    Datum * uniq = radix_uniq(i_data, n, dims);
+    Datum * uniq = adeven_uniq_radix_uniq(i_data, n, dims);
     result = construct_md_array(
             ( void * )uniq,
             NULL,
