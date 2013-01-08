@@ -23,7 +23,7 @@ typedef struct {
     bool *  found;
 } Array;
 
-HStore * adeven_add_hstore_pairs( Pairs *pairs, int4 pcount, int4 buflen )
+HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
 {
     HStore     *out;
     HEntry     *entry;
@@ -138,7 +138,7 @@ void adeven_add_free_array( Array *a )
     a->used = a->size = 0;
 }
 
-HStore * adeven_add_hstore_upgrade(Datum orig)
+HStore * hstoreUpgrade(Datum orig)
 {
 	HStore	   *hs = (HStore *) PG_DETOAST_DATUM(orig);
     return hs;
@@ -209,7 +209,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     if( PG_ARGISNULL( 0 ) && PG_ARGISNULL( 1 ) )
     {
         HStore * out;
-        out = adeven_add_hstore_pairs( 0, 0, 0 );
+        out = hstorePairs( 0, 0, 0 );
         PG_RETURN_POINTER( out );
     }
     HStore * hstore1 = PG_GETARG_HS( 0 );
@@ -290,7 +290,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     }
 
     HStore * out;
-    out = adeven_add_hstore_pairs( pairs, a.used, buflen );
+    out = hstorePairs( pairs, a.used, buflen );
     adeven_add_free_array( &a );
 
     PG_RETURN_POINTER( out );

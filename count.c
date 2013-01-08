@@ -81,7 +81,7 @@ void adeven_count_free_array( adeven_count_Array *a )
     a->used = a->size = 0;
 }
 
-size_t adeven_count_hstore_check_key_len( size_t len )
+size_t hstoreCheckKeyLen( size_t len )
 {
     if( len > HSTORE_MAX_KEY_LEN )
         ereport( ERROR,
@@ -90,7 +90,7 @@ size_t adeven_count_hstore_check_key_len( size_t len )
     return len;
 }
 
-HStore * adeven_count_hstore_pairs( Pairs *pairs, int4 pcount, int4 buflen )
+HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
 {
     HStore     *out;
     HEntry     *entry;
@@ -237,7 +237,7 @@ Datum welle_count( PG_FUNCTION_ARGS )
         }
     }
     HStore * out;
-    out = adeven_count_hstore_pairs( pairs, a.used, buflen );
+    out = hstorePairs( pairs, a.used, buflen );
     adeven_count_free_array( &a );
     PG_RETURN_POINTER( out );
     pfree( perm );
