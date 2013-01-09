@@ -117,11 +117,6 @@ void adeven_add_insert_array( Array *a, char * key, int val, int elem_size )
 
 void adeven_add_free_array( Array *a )
 {
-    int i;
-    for( i = 0; i < a->used; ++i )
-    {
-        pfree( a->vstr[i] );
-    }
     pfree( a->keys );
     pfree( a->vstr );
     pfree( a->vals );
