@@ -120,10 +120,6 @@ void adeven_add_free_array( Array *a )
     int i;
     for( i = 0; i < a->used; ++i )
     {
-        pfree( a->keys[i] );
-    }
-    for( i = 0; i < a->used; ++i )
-    {
         pfree( a->vstr[i] );
     }
     pfree( a->keys );
