@@ -47,7 +47,7 @@ Datum * adeven_uniq_radix_uniq( Datum *data, int n, int * dims )
 
     for( i = 0, j = i + 1; j <= n; j++ )
     {
-        if(a[i]==a[j])
+        if( a[i]==a[j] )
         {
             continue;
         }
