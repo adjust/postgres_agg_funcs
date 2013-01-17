@@ -28,7 +28,7 @@ Select array_uniq(Array[1,5,9,4,1,9])
 
 ## Build:
 
-just run make
+bash build.sh
 
 
 ## Mac OS:
