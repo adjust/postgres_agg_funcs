@@ -214,7 +214,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     int i,j;
 
     Array a;
-    adeven_add_init_array( &a, 10 );
+    adeven_add_init_array( &a, 1 );
 
     int index1 = 0, index2 = 0;
     char * key1, * key2;
