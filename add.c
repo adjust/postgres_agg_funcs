@@ -282,7 +282,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
 
     HStore * out;
     out = hstorePairs( pairs, a.used, buflen );
-    adeven_add_free_array( &a );
+    //adeven_add_free_array( &a );
 
     PG_RETURN_POINTER( out );
 }

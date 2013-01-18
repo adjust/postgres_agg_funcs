@@ -197,7 +197,7 @@ HStore * adeven_count_text_array( Datum* i_data, int n, bool * nulls )
     }
     HStore * out;
     out = hstorePairs( pairs, a.used, buflen );
-    adeven_count_free_array( &a );
+    //adeven_count_free_array( &a );
     return out;
 }
 HStore * adeven_count_int_array( Datum* i_data, int n, bool * nulls )
