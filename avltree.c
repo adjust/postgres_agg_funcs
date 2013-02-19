@@ -145,7 +145,7 @@ AvlTree insert( char * key, int keylen, int value, AvlTree t )
     if( t == NULL )
     {
         /* Create and return a one-node tree */
-        t = palloc( sizeof( struct AvlNode ) );
+        t = palloc0( sizeof( struct AvlNode ) );
         if( t == NULL )
         {
             // out of space

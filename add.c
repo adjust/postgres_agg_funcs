@@ -33,7 +33,7 @@ HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
     int4        i;
 
     len = CALCDATASIZE( pcount, buflen );
-    out = palloc( len );
+    out = palloc0( len );
     SET_VARSIZE( out, len );
     HS_SETCOUNT( out, pcount );
 
@@ -56,11 +56,11 @@ HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
 void adeven_add_init_array( Array *a, size_t initial_size )
 {
     int i = 0;
-    a->keys  = ( char ** )palloc( initial_size * sizeof( char * ) );
-    a->vstr  = ( char ** )palloc( initial_size * sizeof( char * ) );
-    a->vals  = ( int  *  )palloc( initial_size * sizeof( int  * ) );
-    a->sizes = ( int  *  )palloc( initial_size * sizeof( int  * ) );
-    a->found = ( bool *  )palloc( initial_size * sizeof( bool * ) );
+    a->keys  = ( char ** )palloc0( initial_size * sizeof( char * ) );
+    a->vstr  = ( char ** )palloc0( initial_size * sizeof( char * ) );
+    a->vals  = ( int  *  )palloc0( initial_size * sizeof( int  * ) );
+    a->sizes = ( int  *  )palloc0( initial_size * sizeof( int  * ) );
+    a->found = ( bool *  )palloc0( initial_size * sizeof( bool * ) );
     a->used = 0;
     a->size = initial_size;
     for( ; i < initial_size; ++i )
@@ -79,27 +79,27 @@ void adeven_add_insert_array( Array *a, char * key, int val, int elem_size )
         a->size *= 2;
 
         char ** keys_swap = a->keys;
-        a->keys = ( char ** )palloc( a->size * sizeof( char * ) );
+        a->keys = ( char ** )palloc0( a->size * sizeof( char * ) );
         memcpy( a->keys, keys_swap, sizeof( char * ) * i );
         pfree( keys_swap );
 
         char ** vstr_swap = a->vstr;
-        a->vstr = ( char ** )palloc( a->size * sizeof( char * ) );
+        a->vstr = ( char ** )palloc0( a->size * sizeof( char * ) );
         memcpy( a->vstr, vstr_swap, sizeof( char * ) * i );
         pfree( vstr_swap );
 
         int * vals_swap = a->vals;
-        a->vals = ( int * )palloc( a->size * sizeof( int ) );
+        a->vals = ( int * )palloc0( a->size * sizeof( int ) );
         memcpy( a->vals, vals_swap, sizeof( int ) * i );
         pfree( vals_swap );
 
         int * sizes_swap = a->sizes;
-        a->sizes = ( int * )palloc( a->size * sizeof( int ) );
+        a->sizes = ( int * )palloc0( a->size * sizeof( int ) );
         memcpy( a->sizes, sizes_swap, sizeof( int ) * i );
         pfree( sizes_swap );
 
         bool * found_swap = a->found;
-        a->found = ( bool * )palloc( a->size * sizeof( bool ) );
+        a->found = ( bool * )palloc0( a->size * sizeof( bool ) );
         memcpy( a->found, found_swap, sizeof( bool ) * i );
         pfree( found_swap );
 
@@ -151,12 +151,12 @@ int adeven_add_get_digit_num( int number )
 void adeven_add_read_pair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
 {
     size_t vallen = HS_VALLEN( entries, index );
-    char * val = palloc( ( vallen + 1 ) * sizeof( char ) );
+    char * val = palloc0( ( vallen + 1 ) * sizeof( char ) );
     memset( val, '\0', vallen + 1 );
     memcpy(val, HS_VAL( entries, base, index ), vallen );
 
     *keylen = HS_KEYLEN( entries, index );
-    *key = palloc( ( *keylen + 1 ) * sizeof( char ) );
+    *key = palloc0( ( *keylen + 1 ) * sizeof( char ) );
     memset( *key, '\0', *keylen + 1 );
     memcpy(*key, HS_KEY( entries, base, index ), *keylen );
     *vali = atoi( val );
@@ -214,7 +214,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
     int i,j;
 
     Array a;
-    adeven_add_init_array( &a, 1 );
+    adeven_add_init_array( &a, 200 );
 
     int index1 = 0, index2 = 0;
     char * key1, * key2;
@@ -261,13 +261,13 @@ Datum welle_add( PG_FUNCTION_ARGS )
         index2 += 1;
     }
 
-    Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
+    Pairs * pairs = palloc0( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
     for( i = 0; i < a.used; ++i )
     {
         size_t datum_len = a.sizes[i];
         int digit_num = adeven_add_get_digit_num( a.vals[i] );
-        char * dig_str = palloc( digit_num );
+        char * dig_str = palloc0( digit_num );
         sprintf( dig_str, "%d", a.vals[i] );
         a.vstr[i] = dig_str;
         pairs[i].key = a.keys[i];

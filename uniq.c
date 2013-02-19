@@ -10,9 +10,9 @@ PG_MODULE_MAGIC;
 Datum * adeven_uniq_radix_uniq( Datum *data, int n, int * dims )
 {
     int i, j, m = 0, exp = 1;
-    int * a = palloc( n * sizeof(n) );
-    int * b = palloc( n * sizeof(n) );
-    for( i = 0; i < n; i++ ) 
+    int * a = palloc0( n * sizeof(n) );
+    int * b = palloc0( n * sizeof(n) );
+    for( i = 0; i < n; i++ )
     {
         a[i] = DatumGetInt32(data[i]);
         if ( a[i] > m)
@@ -55,7 +55,7 @@ Datum * adeven_uniq_radix_uniq( Datum *data, int n, int * dims )
         i=j;
     }
 
-    Datum *c = ( Datum* )palloc( m * sizeof( Datum ) );
+    Datum *c = ( Datum* )palloc0( m * sizeof( Datum ) );
     for( i = 0; i < m; i++ )
     {
         c[i] = Int32GetDatum( ( int32 )b[i] );

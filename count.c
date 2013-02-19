@@ -22,12 +22,12 @@ typedef struct {
 void adeven_count_init_array( adeven_count_Array *a, size_t initial_size )
 {
     int i = 0;
-    a->array      = ( char ** )palloc( initial_size * sizeof( char* ) );
-    a->counts_str = ( char ** )palloc( initial_size * sizeof( char* ) );
+    a->array      = ( char ** )palloc0( initial_size * sizeof( char* ) );
+    a->counts_str = ( char ** )palloc0( initial_size * sizeof( char* ) );
     a->used       = 0;
     a->size       = initial_size;
-    a->counts     = ( int * )palloc( initial_size * sizeof( int ) );
-    a->sizes      = ( int * )palloc( initial_size * sizeof( int ) );
+    a->counts     = ( int * )palloc0( initial_size * sizeof( int ) );
+    a->sizes      = ( int * )palloc0( initial_size * sizeof( int ) );
     for( i = 0; i < a->size; ++i )
     {
         a->counts[i] = 0;
@@ -41,19 +41,19 @@ void adeven_count_insert_array(adeven_count_Array *a, char* elem, size_t elem_si
         int i = a->size;
         a->size *= 2;
         char ** array_swap = a->array;
-        a->array = ( char ** )palloc( a->size * sizeof( char* ) );
+        a->array = ( char ** )palloc0( a->size * sizeof( char* ) );
         memcpy( a->array, array_swap, sizeof( char* ) * i );
         pfree( array_swap );
         char ** counts_str_swap = a->counts_str;
-        a->counts_str = ( char ** )palloc( a->size * sizeof( char* ) );
+        a->counts_str = ( char ** )palloc0( a->size * sizeof( char* ) );
         memcpy( a->counts_str, counts_str_swap, sizeof( char* ) * i );
         pfree( counts_str_swap );
         int * count_swap = a->counts;
-        a->counts = ( int * )palloc( a->size * sizeof( int ) );
+        a->counts = ( int * )palloc0( a->size * sizeof( int ) );
         memcpy( a->counts, count_swap, sizeof( int ) * i );
         pfree( count_swap );
         int * sizes_swap = a->sizes;
-        a->sizes = ( int * )palloc( a->size * sizeof( int ) );
+        a->sizes = ( int * )palloc0( a->size * sizeof( int ) );
         memcpy( a->sizes, sizes_swap, sizeof( int ) * i );
         pfree( sizes_swap );
         for( ; i < a->size; ++i )
@@ -101,7 +101,7 @@ HStore * hstorePairs( Pairs *pairs, int4 pcount, int4 buflen )
     int4        i;
 
     len = CALCDATASIZE( pcount, buflen );
-    out = palloc( len );
+    out = palloc0( len );
     SET_VARSIZE( out, len );
     HS_SETCOUNT( out, pcount );
 
@@ -161,7 +161,7 @@ HStore * adeven_count_text_array( Datum* i_data, int n, bool * nulls )
             {
                 j = value( position );
             }
-    
+
             a.counts[j] += 1;
         }
     }
@@ -173,7 +173,7 @@ HStore * adeven_count_text_array( Datum* i_data, int n, bool * nulls )
 
     make_empty( tree );
 
-    Pairs * pairs = palloc( a.used * sizeof( Pairs ) );
+    Pairs * pairs = palloc0( a.used * sizeof( Pairs ) );
     int4 buflen = 0;
     for( i = 0; i < a.used; ++i )
     {
@@ -182,7 +182,7 @@ HStore * adeven_count_text_array( Datum* i_data, int n, bool * nulls )
         {
             size_t datum_len = a.sizes[j];
             int digit_num = adeven_count_get_digit_num( a.counts[j] );
-            char * dig_str = palloc(digit_num);
+            char * dig_str = palloc0(digit_num);
             sprintf( dig_str, "%d", a.counts[j] );
             a.counts_str[j] = dig_str;
             pairs[i].key = a.array[j];
@@ -207,7 +207,7 @@ HStore * adeven_count_int_array( Datum* i_data, int n, bool * nulls )
     int * a = palloc0( sizeof( int ) * n );
     int * b = palloc0( sizeof( int ) * n );
     int * c = palloc0( sizeof( int ) * n );
-    
+
     for( ; i < n; ++i )
     {
         a[i] = DatumGetInt32( i_data[i] );
@@ -240,7 +240,7 @@ HStore * adeven_count_int_array( Datum* i_data, int n, bool * nulls )
     }
 
     int m = 0;
-    
+
     for( i = 0; i < n; ++i )
     {
         b[i] = 0;
@@ -272,15 +272,15 @@ HStore * adeven_count_int_array( Datum* i_data, int n, bool * nulls )
         ++n;
     }
 
-    Pairs * pairs = palloc( n * sizeof( Pairs ) );
+    Pairs * pairs = palloc0( n * sizeof( Pairs ) );
     int4 buflen = 0;
 
     for( i = 0; i < n; ++i )
     {
         int digit_key_num = adeven_count_get_digit_num( b[i] );
         int digit_val_num = adeven_count_get_digit_num( c[i] );
-        char * dig_key_str = palloc(digit_key_num);
-        char * dig_val_str = palloc(digit_val_num);
+        char * dig_key_str = palloc0(digit_key_num);
+        char * dig_val_str = palloc0(digit_val_num);
         sprintf( dig_key_str, "%d", b[i] );
         sprintf( dig_val_str, "%d", c[i] );
         pairs[i].key = dig_key_str;
