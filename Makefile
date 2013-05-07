@@ -50,7 +50,7 @@ before_debug:
 
 before_release:
 	test -d lib/Release || mkdir -p lib/Release
-	test -d $(OBJDIR_Release) || mkdir -p $(OBJDIR_Release)
+	test -d $(OBJDIR_RELEASE) || mkdir -p $(OBJDIR_RELEASE)
 
 after_debug:
 
