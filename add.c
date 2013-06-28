@@ -16,7 +16,7 @@ PG_MODULE_MAGIC;
 typedef struct {
     char ** keys;
     char ** vstr;
-    int  *  vals;
+    long *  vals;
     int  *  sizes;
     size_t  used;
     size_t  size;
@@ -71,7 +71,7 @@ void adeven_add_init_array( Array *a, size_t initial_size )
     }
 }
 
-void adeven_add_insert_array( Array *a, char * key, int val, int elem_size )
+void adeven_add_insert_array( Array *a, char * key, long val, int elem_size )
 {
     if( a->used == a->size )
     {
@@ -135,7 +135,7 @@ HStore * hstoreUpgrade(Datum orig)
     return hs;
 }
 
-int adeven_add_get_digit_num( int number )
+int adeven_add_get_digit_num( long number )
 {
     if( number == 0 )
         return 1;
@@ -148,7 +148,7 @@ int adeven_add_get_digit_num( int number )
     return count;
 }
 
-void adeven_add_read_pair( HEntry * entries, char * base, int index, char ** key, int * vali, size_t * keylen )
+void adeven_add_read_pair( HEntry * entries, char * base, int index, char ** key, long * vali, size_t * keylen )
 {
     size_t vallen = HS_VALLEN( entries, index );
     char * val = palloc0( ( vallen + 1 ) * sizeof( char ) );
@@ -159,7 +159,7 @@ void adeven_add_read_pair( HEntry * entries, char * base, int index, char ** key
     *key = palloc0( ( *keylen + 1 ) * sizeof( char ) );
     memset( *key, '\0', *keylen + 1 );
     memcpy(*key, HS_KEY( entries, base, index ), *keylen );
-    *vali = atoi( val );
+    *vali = atol( val );
 
     pfree( val );
 }
@@ -218,7 +218,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
 
     int index1 = 0, index2 = 0;
     char * key1, * key2;
-    int val1, val2;
+    long val1, val2;
     size_t keylen1, keylen2;
 
     // merge both lists by appending the smaller key
@@ -268,7 +268,7 @@ Datum welle_add( PG_FUNCTION_ARGS )
         size_t datum_len = a.sizes[i];
         int digit_num = adeven_add_get_digit_num( a.vals[i] );
         char * dig_str = palloc0( digit_num );
-        sprintf( dig_str, "%d", a.vals[i] );
+        sprintf( dig_str, "%ld", a.vals[i] );
         a.vstr[i] = dig_str;
         pairs[i].key = a.keys[i];
         pairs[i].keylen =  datum_len;
