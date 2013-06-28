@@ -58,7 +58,7 @@ void adeven_add_init_array( Array *a, size_t initial_size )
     int i = 0;
     a->keys  = ( char ** )palloc0( initial_size * sizeof( char * ) );
     a->vstr  = ( char ** )palloc0( initial_size * sizeof( char * ) );
-    a->vals  = ( int  *  )palloc0( initial_size * sizeof( int  * ) );
+    a->vals  = ( long *  )palloc0( initial_size * sizeof( long * ) );
     a->sizes = ( int  *  )palloc0( initial_size * sizeof( int  * ) );
     a->found = ( bool *  )palloc0( initial_size * sizeof( bool * ) );
     a->used = 0;
@@ -88,8 +88,8 @@ void adeven_add_insert_array( Array *a, char * key, long val, int elem_size )
         memcpy( a->vstr, vstr_swap, sizeof( char * ) * i );
         pfree( vstr_swap );
 
-        int * vals_swap = a->vals;
-        a->vals = ( int * )palloc0( a->size * sizeof( int ) );
+        long * vals_swap = a->vals;
+        a->vals = ( long * )palloc0( a->size * sizeof( int ) );
         memcpy( a->vals, vals_swap, sizeof( int ) * i );
         pfree( vals_swap );
 
