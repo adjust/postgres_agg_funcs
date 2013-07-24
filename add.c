@@ -89,8 +89,8 @@ void adeven_add_insert_array( Array *a, char * key, long val, int elem_size )
         pfree( vstr_swap );
 
         long * vals_swap = a->vals;
-        a->vals = ( long * )palloc0( a->size * sizeof( int ) );
-        memcpy( a->vals, vals_swap, sizeof( int ) * i );
+        a->vals = ( long * )palloc0( a->size * sizeof( long ) );
+        memcpy( a->vals, vals_swap, sizeof( long ) * i );
         pfree( vals_swap );
 
         int * sizes_swap = a->sizes;
