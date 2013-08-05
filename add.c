@@ -182,12 +182,12 @@ int adeven_add_compare( char * key1, int keylen1, char * key2, int keylen2 )
     return cmp;
 }
 
-PG_FUNCTION_INFO_V1( welle_add );
+PG_FUNCTION_INFO_V1( adeven_long_add );
 
 // works on sorted hstores only, returns sorted result
 // further idea for improvement: work on array of hstores and use heap to
 // select minimum key (avoids serialization of many hstores)
-Datum welle_add( PG_FUNCTION_ARGS )
+Datum adeven_long_add( PG_FUNCTION_ARGS )
 {
     if( PG_ARGISNULL( 0 ) && ! PG_ARGISNULL( 1 ) )
     {
