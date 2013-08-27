@@ -208,7 +208,7 @@ HStore * adeven_count_int_array( Datum* i_data, int n, bool * nulls )
     int * b = palloc0( sizeof( int ) * n );
     int * c = palloc0( sizeof( int ) * n );
 
-    for( ; i < n; ++i )
+    for( i = 0 ; i < n; ++i )
     {
         a[i] = DatumGetInt32( i_data[i] );
         if( a[i] > biggest )
