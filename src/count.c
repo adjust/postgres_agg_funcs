@@ -57,7 +57,7 @@ void adeven_count_insert_array(adeven_count_Array *a, char* elem, size_t elem_si
         a->sizes = ( int * )palloc0( a->size * sizeof( int ) );
         memcpy( a->sizes, sizes_swap, sizeof( int ) * i );
         pfree( sizes_swap );
-        for( ; i < a->size; ++i )
+        for( i; i < a->size; ++i )
         {
             a->counts[i] = 0;
             a->sizes[i]  = 0;

@@ -63,7 +63,7 @@ void adeven_add_init_array( Array *a, size_t initial_size )
     a->found = ( bool *  )palloc0( initial_size * sizeof( bool * ) );
     a->used = 0;
     a->size = initial_size;
-    for( ; i < initial_size; ++i )
+    for( i; i < initial_size; ++i )
     {
         a->vals[i]  = 0;
         a->sizes[i] = 0;
