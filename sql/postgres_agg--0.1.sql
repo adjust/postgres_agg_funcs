@@ -1,3 +1,4 @@
+CREATE extension hstore;
 CREATE OR REPLACE FUNCTION welle_count(anyarray) RETURNS hstore AS '/usr/local/lib/adjust/count.so' LANGUAGE C;
 CREATE OR REPLACE FUNCTION welle_add(a hstore, b hstore) RETURNS hstore AS '/usr/local/lib/adjust/add.so' LANGUAGE C;
 DROP AGGREGATE IF EXISTS welle_sum(hstore);
