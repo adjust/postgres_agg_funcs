@@ -26,10 +26,12 @@ OUT_RELEASE = lib/Release
 
 OBJ_DEBUG_COUNT = $(OBJDIR_DEBUG)/count.o $(OBJDIR_DEBUG)/avltree.o
 OBJ_DEBUG_ADD = $(OBJDIR_DEBUG)/add.o
+OBJ_DEBUG_FLOAT_ADD = $(OBJDIR_DEBUG)/float_add.o
 OBJ_DEBUG_UNIQ = $(OBJDIR_DEBUG)/uniq.o
 
 OBJ_RELEASE_COUNT = $(OBJDIR_RELEASE)/count.o $(OBJDIR_RELEASE)/avltree.o
 OBJ_RELEASE_ADD = $(OBJDIR_RELEASE)/add.o
+OBJ_RELEASE_FLOAT_ADD = $(OBJDIR_RELEASE)/float_add.o
 OBJ_RELEASE_UNIQ = $(OBJDIR_RELEASE)/uniq.o
 
 all: debug release
@@ -42,6 +44,7 @@ install:
 	test -d $(INSTALL_DIR) || mkdir -p $(INSTALL_DIR)
 	cp $(OUT_RELEASE)/count.so $(INSTALL_DIR)
 	cp $(OUT_RELEASE)/add.so $(INSTALL_DIR)
+	cp $(OUT_RELEASE)/float_add.so $(INSTALL_DIR)
 	cp $(OUT_RELEASE)/uniq.so $(INSTALL_DIR)
 
 before_debug:
@@ -56,15 +59,18 @@ after_debug:
 
 after_release:
 
-debug: before_debug out_debug_count out_debug_add out_debug_uniq after_debug
+debug: before_debug out_debug_count out_debug_add out_debug_float_add out_debug_uniq after_debug
 
-release: before_release out_release_count out_release_add out_release_uniq after_release
+release: before_release out_release_count out_release_add out_release_float_add out_release_uniq after_release
 
 out_debug_count: $(OBJ_DEBUG_COUNT)
 	$(LD) $(OBJ_DEBUG_COUNT) -o $(OUT_DEBUG)/count.so
 
 out_debug_add: $(OBJ_DEBUG_ADD)
 	$(LD) $(OBJ_DEBUG_ADD) -o $(OUT_DEBUG)/add.so
+
+out_debug_float_add: $(OBJ_DEBUG_FLOAT_ADD)
+	$(LD) $(OBJ_DEBUG_FLOAT_ADD) -o $(OUT_DEBUG)/float_add.so
 
 out_debug_uniq: $(OBJ_DEBUG_UNIQ)
 	$(LD) $(OBJ_DEBUG_UNIQ) -o $(OUT_DEBUG)/uniq.so
@@ -74,6 +80,9 @@ out_release_count: $(OBJ_RELEASE_COUNT)
 
 out_release_add: $(OBJ_RELEASE_ADD)
 	$(LD) $(OBJ_RELEASE_ADD) -o $(OUT_RELEASE)/add.so
+
+out_release_float_add: $(OBJ_RELEASE_FLOAT_ADD)
+	$(LD) $(OBJ_RELEASE_FLOAT_ADD) -o $(OUT_RELEASE)/float_add.so
 
 out_release_uniq: $(OBJ_RELEASE_UNIQ)
 	$(LD) $(OBJ_RELEASE_UNIQ) -o $(OUT_RELEASE)/uniq.so
@@ -88,6 +97,9 @@ $(OBJDIR_DEBUG)/avltree.o: avltree.c
 $(OBJDIR_DEBUG)/add.o: add.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c add.c -o $(OBJDIR_DEBUG)/add.o
 
+$(OBJDIR_DEBUG)/float_add.o: float_add.c
+	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c float_add.c -o $(OBJDIR_DEBUG)/float_add.o
+
 $(OBJDIR_DEBUG)/uniq.o: uniq.c
 	$(CC) $(CFLAGS_DEBUG) $(INC_DEBUG) -c uniq.c -o $(OBJDIR_DEBUG)/uniq.o
 
@@ -99,6 +111,9 @@ $(OBJDIR_RELEASE)/avltree.o: avltree.c
 
 $(OBJDIR_RELEASE)/add.o: add.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c add.c -o $(OBJDIR_RELEASE)/add.o
+
+$(OBJDIR_RELEASE)/float_add.o: float_add.c
+	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c float_add.c -o $(OBJDIR_RELEASE)/float_add.o
 
 $(OBJDIR_RELEASE)/uniq.o: uniq.c
 	$(CC) $(CFLAGS_RELEASE) $(INC_RELEASE) -c uniq.c -o $(OBJDIR_RELEASE)/uniq.o
